@@ -2,12 +2,13 @@ services:
   coqui-tts-api:
     build: 
       context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile}
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${PORT}:8000"
     environment:
-      - DEBUG=false
-      - DEVICE=${DEVICE:-auto}
+      - DEVICE=${DEVICE}
+      - DEFAULT_MODEL=${DEFAULT_MODEL}
+      - MAX_TEXT_LENGTH=${MAX_TEXT_LENGTH}
       - PYTHONUNBUFFERED=1
       - TORCH_DISABLE_WEIGHTS_ONLY=1
     volumes:
@@ -19,24 +20,4 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 120s  # Extended for model loading
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
-
-  # Optional: Add nginx for production
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      coqui-tts-api:
-        condition: service_healthy
-    restart: unless-stopped
-    profiles:
-      - production
+      start_period: 120s 
