@@ -1,0 +1,26 @@
+# FastAPI and server dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+aiofiles==23.2.1
+requests>=2.25.0
+
+# TTS Engine - Coqui TTS
+coqui-tts==0.24.2
+
+# PyTorch (CPU version for better compatibility)
+torch>=2.0.0,<2.2.0
+torchaudio>=2.0.0,<2.2.0
+
+# Audio processing (core requirements)
+numpy>=1.21.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+librosa>=0.9.0,<1.0.0
+soundfile>=0.12.1
+
+# Optional dependencies (may fail on some architectures)
+# These are handled gracefully in the Dockerfile
+opensoundscape>=0.10.0; platform_machine != "aarch64"
+ffmpeg-python>=0.2.0
