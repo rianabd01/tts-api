@@ -163,8 +163,10 @@ class TTSService:
                         
                         # Restore environment
                         if old_env is not None:
+                            logger.info("Restoring TORCH_DISABLE_WEIGHTS_ONLY")
                             os.environ['TORCH_DISABLE_WEIGHTS_ONLY'] = old_env
                         else:
+                            logger.info("TORCH_DISABLE_WEIGHTS_ONLY not set")
                             os.environ.pop('TORCH_DISABLE_WEIGHTS_ONLY', None)
                 else:
                     # Regular model loading

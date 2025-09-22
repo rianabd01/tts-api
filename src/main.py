@@ -145,12 +145,11 @@ async def get_model_info(model_name: str):
 async def voice_clone_tts(
     text: str = Form(..., description="Text to convert to speech"),
     model_name: str = Form("tts_models/multilingual/multi-dataset/xtts_v2", description="TTS model to use"), 
-    language: str = Form("en", description="Language code"),
+    language_id: str = Form("en", description="Language code"),
     output_format: str = Form("wav", description="Output audio format"),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
-    """Text-to-speech with voice cloning using static harvard.wav - returns audio file for download"""
-    
+
     # Check TTS service availability
     if not TTS_AVAILABLE or tts_service is None:
         raise HTTPException(status_code=503, detail="TTS service not available")
@@ -162,10 +161,10 @@ async def voice_clone_tts(
             detail=f"Text too long. Maximum length is {settings.max_text_length} characters"
         )
     
-    # Use static harvard.wav file for voice cloning
-    harvard_wav_path = os.path.join(os.path.dirname(__file__), "harvard.wav")
-    if not os.path.exists(harvard_wav_path):
-        raise HTTPException(status_code=500, detail="Reference audio file (harvard.wav) not found")
+    # Use wav file for voice cloning
+    style_tts_path = os.path.join(os.path.dirname(__file__), "gana.wav")
+    if not os.path.exists(style_tts_path):
+        raise HTTPException(status_code=500, detail="Reference audio file (gana.wav) not found")
     
     # Create temporary directory for this request
     temp_dir = tempfile.mkdtemp(prefix="tts_")
@@ -179,23 +178,23 @@ async def voice_clone_tts(
         # Generate safe filename for download
         text_hash = hashlib.md5(text.encode('utf-8')).hexdigest()[:8]
         timestamp = int(time.time())
-        output_filename = f"tts_harvard_{language}_{text_hash}_{timestamp}.{output_format}"
+        output_filename = f"tts_{language_id}_{text_hash}_{timestamp}.{output_format}"
         
         # Load TTS model
         tts = tts_service.load_model(model_name)
         
-        # Synthesize speech using harvard.wav for voice cloning
+        # Synthesize speech for voice cloning
         if "xtts" in model_name.lower():
             tts.tts_to_file(
                 text=text,
-                speaker_wav=harvard_wav_path,
-                language=language or "en",
+                speaker_wav=style_tts_path,
+                language=language_id or "en",
                 file_path=temp_output_path
             )
         else:
             tts.tts_with_vc_to_file(
                 text=text,
-                speaker_wav=harvard_wav_path,
+                speaker_wav=style_tts_path,
                 file_path=temp_output_path
             )
         
