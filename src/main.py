@@ -11,6 +11,8 @@ import logging
 import time
 import threading
 from pathlib import Path
+from langdetect import detect, DetectorFactory
+from langdetect.lang_detect_exception import LangDetectException
 
 from config import settings
 from tts_service import tts_service, TTS_AVAILABLE
@@ -21,6 +23,62 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Set seed for consistent language detection results
+DetectorFactory.seed = 0
+
+# Language mapping for TTS compatibility
+LANGUAGE_MAPPING = {
+    'en': 'en',      # English
+    'es': 'es',      # Spanish 
+    'fr': 'fr',      # French
+    'de': 'de',      # German
+    'it': 'it',      # Italian
+    'pt': 'pt',      # Portuguese
+    'pl': 'pl',      # Polish
+    'tr': 'tr',      # Turkish
+    'ru': 'ru',      # Russian
+    'mk': 'ru',      # Macedonian (often confused with Russian)
+    'bg': 'ru',      # Bulgarian (map to Russian for Cyrillic support)
+    'nl': 'nl',      # Dutch
+    'cs': 'cs',      # Czech
+    'ar': 'ar',      # Arabic
+    'zh-cn': 'zh',   # Chinese (Simplified)
+    'zh': 'zh',      # Chinese
+    'ja': 'ja',      # Japanese
+    'hu': 'hu',      # Hungarian
+    'ko': 'ko',      # Korean
+    'hi': 'hi',      # Hindi
+    'sv': 'en',      # Swedish (map to English)
+    'da': 'en',      # Danish (map to English)
+    'no': 'en',      # Norwegian (map to English)
+    'fi': 'en',      # Finnish (map to English)
+    'so': 'en',      # Somali (map to English)
+}
+
+def detect_language(text: str) -> str:
+    """Detect language from text with fallback to English"""
+    try:
+        # Clean text for better detection
+        clean_text = text.strip()
+        if len(clean_text) < 3:
+            logger.warning("Text too short for reliable language detection, defaulting to English")
+            return 'en'
+        
+        detected_lang = detect(clean_text)
+        
+        # Map detected language to TTS-supported language
+        mapped_lang = LANGUAGE_MAPPING.get(detected_lang, 'en')
+        
+        logger.info(f"Detected language: {detected_lang} -> Mapped to: {mapped_lang}")
+        return mapped_lang
+        
+    except LangDetectException as e:
+        logger.warning(f"Language detection failed: {e}, defaulting to English")
+        return 'en'
+    except Exception as e:
+        logger.error(f"Unexpected error in language detection: {e}, defaulting to English")
+        return 'en'
 
 # Create FastAPI app
 app = FastAPI(
@@ -145,7 +203,6 @@ async def get_model_info(model_name: str):
 async def voice_clone_tts(
     text: str = Form(..., description="Text to convert to speech"),
     model_name: str = Form("tts_models/multilingual/multi-dataset/xtts_v2", description="TTS model to use"), 
-    language_id: str = Form("en", description="Language code"),
     output_format: str = Form("wav", description="Output audio format"),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
@@ -160,6 +217,10 @@ async def voice_clone_tts(
             status_code=400, 
             detail=f"Text too long. Maximum length is {settings.max_text_length} characters"
         )
+    
+    # Automatically detect language from text
+    detected_language = detect_language(text)
+    logger.info(f"Auto-detected language for text: '{text[:50]}...' -> {detected_language}")
     
     # Use wav file for voice cloning
     style_tts_path = os.path.join(os.path.dirname(__file__), "gana.wav")
@@ -178,7 +239,7 @@ async def voice_clone_tts(
         # Generate safe filename for download
         text_hash = hashlib.md5(text.encode('utf-8')).hexdigest()[:8]
         timestamp = int(time.time())
-        output_filename = f"tts_{language_id}_{text_hash}_{timestamp}.{output_format}"
+        output_filename = f"tts_{detected_language}_{text_hash}_{timestamp}.{output_format}"
         
         # Load TTS model
         tts = tts_service.load_model(model_name)
@@ -188,7 +249,7 @@ async def voice_clone_tts(
             tts.tts_to_file(
                 text=text,
                 speaker_wav=style_tts_path,
-                language=language_id or "en",
+                language=detected_language,
                 file_path=temp_output_path
             )
         else:
@@ -208,7 +269,7 @@ async def voice_clone_tts(
         
         background_tasks.add_task(cleanup_temp_directory)
         
-        logger.info(f"Generated audio file: {output_filename}")
+        logger.info(f"Generated audio file: {output_filename} (Language: {detected_language})")
         
         # Return the audio file for download
         return FileResponse(
