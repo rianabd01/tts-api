@@ -1,8 +1,12 @@
 # Use Python 3.11 slim image for better compatibility
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
+
+COPY . .
+
+WORKDIR /app/src
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -12,7 +16,7 @@ ENV TORCH_DISABLE_WEIGHTS_ONLY=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
+# Install system dependencies + Rust
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
@@ -25,8 +29,11 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libasound2-dev \
     portaudio19-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    # Rust compiler (buat sudachipy)
+    rustc \
+    cargo \
+ && rm -rf /var/lib/apt/lists/* \
+ && apt-get clean
 
 # Upgrade pip and install build tools
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
