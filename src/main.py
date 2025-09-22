@@ -121,9 +121,9 @@ async def root():
         "status": "running",
         "docs_url": "/docs",
         "endpoints": {
-            "text_to_speech": "/tts",
-            "available_models": "/models",
-            "model_info": "/models/{model_name}",
+            "text_to_speech": "/api/tts",
+            "available_models": "/api/models",
+            "model_info": "/api/models/{model_name}",
             "health": "/health"
         }
     }
@@ -171,7 +171,7 @@ async def compatibility_check():
     
     return compatibility_info
 
-@app.get("/models", response_model=List[str])
+@app.get("/api/models", response_model=List[str])
 async def get_available_models():
     """Get list of available TTS models"""
     if not TTS_AVAILABLE or tts_service is None:
@@ -184,7 +184,7 @@ async def get_available_models():
         logger.error(f"Failed to get available models: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get available models: {str(e)}")
 
-@app.get("/models/{model_name:path}", response_model=Dict[str, Any])
+@app.get("/api/models/{model_name:path}", response_model=Dict[str, Any])
 async def get_model_info(model_name: str):
     """Get information about a specific model"""
     if not TTS_AVAILABLE or tts_service is None:
@@ -199,7 +199,7 @@ async def get_model_info(model_name: str):
         logger.error(f"Failed to get model info: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get model info: {str(e)}")
 
-@app.post("/tts")
+@app.post("/api/tts")
 async def voice_clone_tts(
     text: str = Form(..., description="Text to convert to speech"),
     model_name: str = Form("tts_models/multilingual/multi-dataset/xtts_v2", description="TTS model to use"), 

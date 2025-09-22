@@ -36,11 +36,29 @@ curl -X POST "http://localhost:3022/tts" \
   -o output.wav
 ```
 
-## API Endpoints
-- `GET /health` - Check service health
-- `POST /tts` - Convert text to speech
-- `GET /models` - List models can be used (will download in first request)
 
+## API Endpoints
+
+- `GET /`  
+  Root endpoint, provides basic service info.
+
+- `GET /health`  
+  Check service health status.
+
+- `GET /compatibility`  
+  Check model compatibility.
+
+- `GET /api/models`  
+  List available models (models will be downloaded on first request).
+
+- `GET /api/models/{model_name}`  
+  Retrieve details of a specific model.
+
+- `POST /api/tts`  
+  Convert text into speech (Text-to-Speech).
+
+- `DELETE /cleanup`  
+  Clear cache or temporary files.
 ## Parameters
 - `text` - Text to convert to speech
 - `model_name` - Model ID (default: xttsv2)
