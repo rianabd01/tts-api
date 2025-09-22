@@ -3,6 +3,7 @@
 Text-to-speech conversion with voice cloning support.
 
 ## Features
+- Auto detect language
 - High-quality Text-to-Speech
 - 17 languages supported
 - REST API
@@ -15,7 +16,7 @@ Text-to-speech conversion with voice cloning support.
 ### Development
 ```bash
 make install
-make dev
+make dev || make run
 ```
 
 ### Using Docker
@@ -31,7 +32,6 @@ docker compose up -d
 # Generate speech from text
 curl -X POST "http://localhost:3022/tts" \
   -F "text=Hello, this is text to speech" \
-  -F "language_id=en" \
   -F "output_format=wav" \
   -o output.wav
 ```
@@ -43,7 +43,6 @@ curl -X POST "http://localhost:3022/tts" \
 
 ## Parameters
 - `text` - Text to convert to speech
-- `language_id` - Language code (e.g., en, es, fr,)
 - `model_name` - Model ID (default: xttsv2)
 - `output_format` - Audio format (wav, mp3)
 
