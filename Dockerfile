@@ -1,5 +1,5 @@
 # Use Python 3.11 slim image for better compatibility
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -75,13 +75,13 @@ RUN useradd -m -u 1000 appuser && \
 USER appuser
 
 # Expose port
-EXPOSE 8000
+EXPOSE 3022
 
 # Health check (extended timeout for model loading)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:3022/health || exit 1
 
 ENV COQUI_TOS_AGREED=1
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3022", "--workers", "1"]

@@ -9,6 +9,15 @@ Text-to-speech conversion with voice cloning support.
 
 ## Quick Start
 
+### Requirements
+- Python 3.11
+
+### Development
+```bash
+make install
+make dev
+```
+
 ### Using Docker
 ```bash
 # Clone and start the service

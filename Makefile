@@ -1,23 +1,31 @@
-# TTS API Makefile
-# Makes it easy to manage the Coqui TTS application
+.PHONY: dev
 
-.PHONY: help install run docker-build docker-run docker-arm64 docker-arm64-safe docker-minimal stop clean test health logs env env-local env-docker env-arm64 env-show env-reset
+# Load .env file if exists
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
+
+# Fallback default
+HOST ?= 0.0.0.0
+PORT ?= 3022
 
 # Python environment setup
 install:
 	@echo "📦 Installing Python dependencies..."
-	pip3 install -r requirements.txt
+	python3.11 -m pip install -r requirements.txt
 	@echo "✅ Dependencies installed successfully!"
 
 # Local development
 run:
 	@echo "🚀 Starting TTS API locally..."
-	cd src && python3 main.py
+	@echo "📍 Loading environment variables from .env file..."
+	cd src && python3.11 main.py
 
 dev:
-	@echo "🔄 Starting TTS API in development mode..."
-	cd src && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
+	@echo "🔄 Starting TTS API in development mode with hot reload..."
+	@echo "📍 Using HOST=$(HOST), PORT=$(PORT)"
+	cd src && python3.11 -m uvicorn main:app --host $(HOST) --port $(PORT) --reload --env-file ../.env
 # Docker commands
 docker-build:
 	@echo "🔨 Building Docker image for x86_64..."
@@ -37,7 +45,7 @@ docker-logs:
 # Health and monitoring
 health:
 	@echo "🏥 Checking TTS API health..."
-	@curl -s http://localhost:8000/health | python3 -m json.tool || echo "❌ API not responding"
+	@curl -s http://localhost:3022/health | python3 -m json.tool || echo "❌ API not responding"
 
 # Architecture detection and smart start
 start:

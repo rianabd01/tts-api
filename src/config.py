@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     
     # Server settings
     host: str = "0.0.0.0"
-    port: int = 8000
+    port: int = 3022
     
     # TTS settings
     default_model: str = "tts_models/multilingual/multi-dataset/xtts_v2"
