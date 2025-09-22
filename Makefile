@@ -5,18 +5,18 @@
 
 # Python environment setup
 install:
-    @echo "📦 Installing Python dependencies..."
-    pip3 install -r requirements.txt
-    @echo "✅ Dependencies installed successfully!"
+	@echo "📦 Installing Python dependencies..."
+	pip3 install -r requirements.txt
+	@echo "✅ Dependencies installed successfully!"
 
 # Local development
 run:
-    @echo "🚀 Starting TTS API locally..."
-    cd src && python3 main.py
+	@echo "🚀 Starting TTS API locally..."
+	cd src && python3 main.py
 
 dev:
-    @echo "🔄 Starting TTS API in development mode..."
-    cd src && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+	@echo "🔄 Starting TTS API in development mode..."
+	cd src && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 # Docker commands
 docker-build:
